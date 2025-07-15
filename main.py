@@ -61,5 +61,7 @@ def send_dm(recipient_id, message_text):
     response = requests.post(url, json=payload, headers=headers)
     print("📤 DM Send Response:", response.json())
 
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5000))  # Render gives you a port to use
+    app.run(host='0.0.0.0', port=port)
+
