@@ -64,3 +64,31 @@ def send_dm(recipient_id, message_text):
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))  # Render gives you a port to use
     app.run(host='0.0.0.0', port=port)
+
+
+
+
+import os
+from flask import Flask, request
+
+app = Flask(__name__)
+
+VERIFY_TOKEN = "taravi2025bot"
+
+@app.route("/", methods=["GET"])
+def verify():
+    # Facebook Webhook verification
+    if request.args.get("hub.mode") == "subscribe" and request.args.get("hub.verify_token") == VERIFY_TOKEN:
+        return request.args.get("hub.challenge")
+    return "Verification failed", 403
+
+@app.route("/", methods=["POST"])
+def webhook():
+    data = request.json
+    print("Incoming webhook data:", data)
+    # Here you can add logic to parse the comment and reply
+    return "OK", 200
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=os.environ.get("PORT", 5000))
+
