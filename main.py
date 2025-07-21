@@ -20,28 +20,24 @@ def verify():
         return "Verification failed", 403
 
 # Webhook to receive Instagram comment events (POST)
-@app.route("/webhook", methods=["POST"])
+@app.route('/webhook', methods=['POST'])
 def webhook():
-    data = request.json
+    data = request.get_json()
     print("Received webhook:", data)
 
-    try:
-        changes = data['entry'][0]['changes'][0]
-        if changes['field'] == 'comments':
-            comment_text = changes['value']['text']
-            sender_id = changes['value']['from']['id']
-            username = changes['value']['from']['username']
+    if 'entry' in data:
+        for entry in data['entry']:
+            messaging = entry.get('messaging') or entry.get('changes')
+            if messaging:
+                for event in messaging:
+                    value = event.get('value', {})
+                    comment_text = value.get('text', '').lower()
+                    user_id = value.get('from', {}).get('id')
 
-            print(f"Comment from @{username}: '{comment_text}' (ID: {sender_id})")
+                    if 'link' in comment_text:
+                        send_dm(user_id, "Thanks for your comment! Here's the PDF link 📄:\nhttps://yourdomain.com/yourfile.pdf")
+    return "ok", 200
 
-            # Trigger keyword check
-            if "send" in comment_text.lower():
-                send_dm(sender_id, pdf_url="https://drive.google.com/file/d/1-7ck6TJMxKMFAXmtGX_vrb_YsquJTd13/view?usp=sharing")
-
-    except Exception as e:
-        print("Error processing webhook:", e)
-
-    return "OK", 200
 
 # Function to send DM using Instagram Messaging API
 def send_dm(user_id, message_text=None, pdf_url=None):
